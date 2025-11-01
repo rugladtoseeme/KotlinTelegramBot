@@ -1,20 +1,20 @@
-dog собака
-cat кошка
-tree дерево
-pear груша
-dawn рассвет
-fridge холодильник
-roof крыша
-airplane самолет
-horse лошадь
-sun солнце
-rat крыса
-candy карамель
-rain дождь
-pizza пицца
-bat летцчая мышь
-storm буря
-corn кукуруза
-movie фильм
-glasses очки
-chocolate шоколад
+dog|собака|0
+cat|кошка|0
+tree|дерево|0
+pear|груша|0
+dawn|рассвет|0
+fridge|холодильник|0
+roof|крыша|0
+airplane|самолет|0
+horse|лошадь|0
+sun|солнце|0
+rat|крыса|0
+candy|карамель|0
+rain|дождь|0
+pizza|пицца|0
+bat|летучая мышь|0
+storm|буря|0
+corn|кукуруза|0
+movie|фильм|0
+glasses|очки|0
+chocolate|шоколад|0
