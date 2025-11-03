@@ -21,8 +21,8 @@ fun main() {
 
     val dictionary = loadDictionary()
 
-    println("Меню: \n1 – Учить слова\n2 – Статистика\n0 – Выход")
     while (true) {
+        println("Меню: \n1 – Учить слова\n2 – Статистика\n0 – Выход")
         val choice = readln().toIntOrNull()
         when {
             choice == 1 -> println("Учить слова")
@@ -33,5 +33,4 @@ fun main() {
     }
 
     println("Работа завершена.")
-
 }
