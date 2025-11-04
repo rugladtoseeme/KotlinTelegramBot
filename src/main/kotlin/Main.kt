@@ -30,7 +30,7 @@ fun main() {
                 println("Статистика.")
                 val totalCount = dictionary.size
                 val learnedCount = dictionary.filter { it.correctAnswersCount >= 3 }.count()
-                println("Выучено ${learnedCount} из $totalCount слов | ${(learnedCount.toDouble() / totalCount) * 100}%")
+                println("Выучено ${learnedCount} из $totalCount слов | ${(learnedCount.toDouble() / totalCount) * 100}%\n")
             }
 
             choice == 0 -> break
