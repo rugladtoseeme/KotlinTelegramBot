@@ -1,3 +1,5 @@
+package org.example
+
 import java.io.File
 
 const val WORDS_FILE_NAME = "words.txt"
@@ -24,7 +26,13 @@ fun main() {
         val choice = readln().toIntOrNull()
         when {
             choice == 1 -> println("Учить слова")
-            choice == 2 -> println("Статистика.")
+            choice == 2 -> {
+                println("Статистика.")
+                val totalCount = dictionary.size
+                val learnedCount = dictionary.filter { it.correctAnswersCount >= 3 }.count()
+                println("Выучено ${learnedCount} из $totalCount слов | ${(learnedCount.toDouble() / totalCount) * 100}%")
+            }
+
             choice == 0 -> break
             else -> println("Введите число 1, 2 или 0")
         }
