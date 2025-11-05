@@ -3,6 +3,7 @@ package org.example
 import java.io.File
 
 const val WORDS_FILE_NAME = "words.txt"
+const val RIGHT_ANSWERS_THRESHOLD = 3
 
 data class Word(val original: String, val translation: String, var correctAnswersCount: Int = 0)
 
@@ -29,8 +30,8 @@ fun main() {
             choice == 2 -> {
                 println("Статистика.")
                 val totalCount = dictionary.size
-                val learnedCount = dictionary.filter { it.correctAnswersCount >= 3 }.count()
-                println("Выучено ${learnedCount} из $totalCount слов | ${(learnedCount.toDouble() / totalCount) * 100}%\n")
+                val learnedCount = dictionary.filter { it.correctAnswersCount >= RIGHT_ANSWERS_THRESHOLD }.count()
+                println("Выучено ${learnedCount} из $totalCount слов | ${(learnedCount.toDouble() / (if (totalCount == 0) 1 else 0)) * 100}%\n")
             }
 
             choice == 0 -> break
