@@ -19,7 +19,7 @@ fun loadDictionary(): MutableList<Word> {
     return dictionary
 }
 
-fun getNotLearned(dictionary: List<Word>) = dictionary.filter { it.correctAnswersCount >= RIGHT_ANSWERS_THRESHOLD }
+fun getNotLearned(dictionary: List<Word>) = dictionary.filter { it.correctAnswersCount < RIGHT_ANSWERS_THRESHOLD }
 
 fun main() {
 
@@ -31,18 +31,33 @@ fun main() {
         val choice = readln().toIntOrNull()
         when {
             choice == 1 -> {
-                println("Учить слова")
-                if (notLearnedList.isEmpty()) {
-                    println("Все слова выучены")
-                    continue
-                } else {
-                    val questionWords = notLearnedList.shuffled().take(QUESTION_WORDS_SIZE)
-                    println("\n${questionWords[(0..QUESTION_WORDS_SIZE-1).random()].original}:")
-                    for (word in questionWords) {
-                        println(" - ${word.translation}")
+                println("Учить слова:")
+
+                while (true) {
+                    if (notLearnedList.isEmpty()) {
+                        println("Все слова в словаре выучены.")
+                        break
+                    } else {
+
+                        val questionWords = notLearnedList.shuffled().take(QUESTION_WORDS_SIZE)
+                        val questionWord = questionWords[(0..QUESTION_WORDS_SIZE - 1).random()]
+                        println("\n${questionWord.original}:")
+                        var counter = 1
+                        for (word in questionWords) {
+                            println(" ${counter++} - ${word.translation}")
+                        }
+                        println()
+                        val answerNumber = readln().toInt()
+                        if (!(answerNumber in 1..QUESTION_WORDS_SIZE) ||
+                            questionWord.translation != questionWords[answerNumber - 1].translation
+                        ) {
+                            println("Неправильно! ${questionWord.original} – это ${questionWord.translation}")
+                            continue
+                        } else {
+                            println("Правильно!")
+                            questionWord.correctAnswersCount++
+                        }
                     }
-                    println()
-                    val answerNumber = readln().toInt()
                 }
             }
 
