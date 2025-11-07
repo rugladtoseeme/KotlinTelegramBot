@@ -37,7 +37,7 @@ fun main() {
                     continue
                 } else {
                     val questionWords = notLearnedList.shuffled().take(QUESTION_WORDS_SIZE)
-                    println("\n${questionWords[(0..QUESTION_WORDS_SIZE).random()].original}:")
+                    println("\n${questionWords[(0..QUESTION_WORDS_SIZE-1).random()].original}:")
                     for (word in questionWords) {
                         println(" - ${word.translation}")
                     }
