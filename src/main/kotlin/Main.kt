@@ -4,6 +4,7 @@ import java.io.File
 
 const val WORDS_FILE_NAME = "words.txt"
 const val RIGHT_ANSWERS_THRESHOLD = 3
+const val QUESTION_WORDS_SIZE = 4
 
 data class Word(val original: String, val translation: String, var correctAnswersCount: Int = 0)
 
@@ -18,15 +19,33 @@ fun loadDictionary(): MutableList<Word> {
     return dictionary
 }
 
+fun getNotLearned(dictionary: List<Word>) = dictionary.filter { it.correctAnswersCount >= RIGHT_ANSWERS_THRESHOLD }
+
 fun main() {
 
     val dictionary = loadDictionary()
+    val notLearnedList = getNotLearned(dictionary)
 
     while (true) {
         println("Меню: \n1 – Учить слова\n2 – Статистика\n0 – Выход")
         val choice = readln().toIntOrNull()
         when {
-            choice == 1 -> println("Учить слова")
+            choice == 1 -> {
+                println("Учить слова")
+                if (notLearnedList.isEmpty()) {
+                    println("Все слова выучены")
+                    continue
+                } else {
+                    val questionWords = notLearnedList.shuffled().take(QUESTION_WORDS_SIZE)
+                    println("\n${questionWords[(0..QUESTION_WORDS_SIZE).random()].original}:")
+                    for (word in questionWords) {
+                        println(" - ${word.translation}")
+                    }
+                    println()
+                    val answerNumber = readln().toInt()
+                }
+            }
+
             choice == 2 -> {
                 println("Статистика.")
                 val totalCount = dictionary.size
