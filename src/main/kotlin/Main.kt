@@ -6,7 +6,9 @@ const val WORDS_FILE_NAME = "words.txt"
 const val RIGHT_ANSWERS_THRESHOLD = 3
 const val QUESTION_WORDS_SIZE = 4
 
-data class Word(val original: String, val translation: String, var correctAnswersCount: Int = 0)
+data class Word(val original: String, val translation: String, var correctAnswersCount: Int = 0) {
+    override fun toString() = "${original}|${translation}|${correctAnswersCount}"
+}
 
 fun loadDictionary(): MutableList<Word> {
     val file = File(WORDS_FILE_NAME)
@@ -48,7 +50,7 @@ fun main() {
                     } else {
                         println("Правильно!")
                         questionWord.correctAnswersCount++
-                        dictionary = saveDictionary(questionWord)
+                        saveDictionary(dictionary)
                         notLearnedList = getNotLearned(dictionary)
                     }
                 }
@@ -69,14 +71,13 @@ fun main() {
     println("Работа завершена.")
 }
 
-fun saveDictionary(word: Word): MutableList<Word> {
+fun saveDictionary(dictionary: List<Word>) {
     val file = File(WORDS_FILE_NAME)
-    var lines = file.readLines().minusElement("${word.original}|${word.translation}|${word.correctAnswersCount - 1}")
-        .toMutableList()
-    lines.add("${word.original}|${word.translation}|${word.correctAnswersCount}")
+    val lines = mutableListOf<String>()
+    for (word in dictionary) {
+        lines.add(word.toString())
+    }
     file.writeText(lines.joinToString("\n"))
-
-    return linesToWords(lines)
 }
 
 fun linesToWords(lines: List<String>): MutableList<Word> {
