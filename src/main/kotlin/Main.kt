@@ -7,7 +7,7 @@ const val RIGHT_ANSWERS_THRESHOLD = 3
 const val QUESTION_WORDS_SIZE = 4
 
 data class Word(val original: String, val translation: String, var correctAnswersCount: Int = 0) {
-    override fun toString() = "${original}|${translation}|${correctAnswersCount}"
+    fun toDictionaryFormat() = "${original}|${translation}|${correctAnswersCount}"
 }
 
 fun loadDictionary(): MutableList<Word> {
@@ -40,11 +40,13 @@ fun main() {
                     val questionWord = questionWords[(0..questionWords.size - 1).random()]
                     println("\n${questionWord.original}:")
                     questionWords.forEachIndexed { index, word -> println(" ${index + 1} - ${word.translation}") }
+                    println(" ----------\n 0 - Меню")
                     println()
                     val answerNumber = readln().toIntOrNull()
                     if (answerNumber == null || !(answerNumber in 1..questionWords.size) ||
                         questionWord.translation != questionWords[answerNumber - 1].translation
                     ) {
+                        if (answerNumber == 0) break
                         println("Неправильно! ${questionWord.original} – это ${questionWord.translation}")
                         continue
                     } else {
@@ -75,7 +77,7 @@ fun saveDictionary(dictionary: List<Word>) {
     val file = File(WORDS_FILE_NAME)
     val lines = mutableListOf<String>()
     for (word in dictionary) {
-        lines.add(word.toString())
+        lines.add(word.toDictionaryFormat())
     }
     file.writeText(lines.joinToString("\n"))
 }
