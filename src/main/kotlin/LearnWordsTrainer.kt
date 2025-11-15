@@ -29,14 +29,22 @@ class LearnWordsTrainer {
     fun getNextQuestion(): Question? {
         val notLearnedWords = dictionary.filter { it.correctAnswersCount < RIGHT_ANSWERS_THRESHOLD }
         if (notLearnedWords.isEmpty()) return null
-        val variants = notLearnedWords.shuffled().take(QUESTION_WORDS_SIZE)
+
+        val variants = if (notLearnedWords.size < QUESTION_WORDS_SIZE) {
+            notLearnedWords.shuffled() + dictionary.filter { it.correctAnswersCount >= RIGHT_ANSWERS_THRESHOLD }
+                .shuffled()
+                .take(QUESTION_WORDS_SIZE - notLearnedWords.size)
+        } else {
+            notLearnedWords.shuffled().take(QUESTION_WORDS_SIZE)
+        }.shuffled()
+
         currentQuestion = Question(variants.random(), variants)
         return currentQuestion
     }
 
     fun checkAnswer(answerIndex: Int): Boolean {
         return currentQuestion.let {
-            if (answerIndex in (0..(currentQuestion?.variants?.size ?: 0)) &&
+            if (answerIndex in (0 until (currentQuestion?.variants?.size ?: 0)) &&
                 currentQuestion?.correctAnswer?.translation == currentQuestion?.variants[answerIndex]?.translation
             ) {
                 currentQuestion?.correctAnswer?.correctAnswersCount++

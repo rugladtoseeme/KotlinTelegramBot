@@ -6,7 +6,12 @@ const val QUESTION_WORDS_SIZE = 4
 
 fun main() {
 
-    var trainer = LearnWordsTrainer()
+    val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     while (true) {
         println("Меню: \n1 – Учить слова\n2 – Статистика\n0 – Выход")
