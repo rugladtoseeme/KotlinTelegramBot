@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
         if (text.equals("hello", ignoreCase = true)) {
 
             val chatId: Long? = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
-            if (chatId != null) {
+            chatId?.let {
                 val response = tgBotService.sendMessage(chatId, "hello!")
             }
         }
