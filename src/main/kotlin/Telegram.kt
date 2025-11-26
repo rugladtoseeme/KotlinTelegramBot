@@ -20,10 +20,12 @@ fun main(args: Array<String>) {
         println(text)
         Thread.sleep(2000)
 
-        if (updateId != 1L && text.equals("hello", ignoreCase = true)) {
+        if (text.equals("hello", ignoreCase = true)) {
 
-            val chatId = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong() ?: 0
-            val response = tgBotService.sendMessage(chatId, "hello!")
+            val chatId: Long? = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
+            if (chatId != null) {
+                val response = tgBotService.sendMessage(chatId, "hello!")
+            }
         }
     }
 }

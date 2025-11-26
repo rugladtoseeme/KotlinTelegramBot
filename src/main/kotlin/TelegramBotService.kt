@@ -1,16 +1,20 @@
 package org.example
 
 import java.net.URI
+import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.nio.charset.StandardCharsets
 
 class TelegramBotService(val botToken: String) {
 
     fun sendMessage(chatId: Long, messageText: String): String {
 
         val urlGetUpdates =
-            "https://api.telegram.org/bot$botToken/sendMessage?chat_id=$chatId&text=$messageText"
+            "https://api.telegram.org/bot$botToken/sendMessage?chat_id=$chatId&text=${
+                URLEncoder.encode(messageText, StandardCharsets.UTF_8)
+            }"
         val client: HttpClient = HttpClient.newBuilder().build()
         val requestGetUpdates: HttpRequest = HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).build()
         try {
