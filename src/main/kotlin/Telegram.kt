@@ -16,16 +16,14 @@ fun main(args: Array<String>) {
 
         updateId = (updateIdRegex.find(updates)?.groups?.get(1)?.value?.toLong() ?: 0) + 1
 
+        val chatId: Long = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLongOrNull() ?: continue
+
         val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
         println(text)
         Thread.sleep(2000)
 
         if (text.equals("hello", ignoreCase = true)) {
-
-            val chatId: Long? = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLong()
-            chatId?.let {
-                val response = tgBotService.sendMessage(chatId, "hello!")
-            }
+            val response = tgBotService.sendMessage(chatId, "hello!")
         }
     }
 }
