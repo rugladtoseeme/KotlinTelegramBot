@@ -1,5 +1,17 @@
 package org.example
 
+const val MENU_STATISTICS_MESSAGE = "Выучено 10 из 10 слов | 100%"
+const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
+const val MENU_LEARN_MESSAGE = "Учить английские слова"
+const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
+
+const val BUTTON_TEXT_STATISTICS = "Статистика"
+const val BUTTON_TEXT_LEARN_WORDS = "Изучить слова"
+
+const val MENU_COMMAND = "menu"
+const val HELLO_COMMAND = "hello"
+const val HELLO_MESSAGE = "hello!"
+
 fun main(args: Array<String>) {
 
     val botToken = args[0]
@@ -26,23 +38,23 @@ fun main(args: Array<String>) {
         println(text)
         Thread.sleep(2000)
 
-        if (text.equals("hello", ignoreCase = true)) {
-            val response = tgBotService.sendMessage(chatId, "hello!")
+        if (text.equals(HELLO_COMMAND, ignoreCase = true)) {
+            val response = tgBotService.sendMessage(chatId, HELLO_MESSAGE)
         }
 
-        if (text.equals("menu", ignoreCase = true)) {
+        if (text.equals(MENU_COMMAND, ignoreCase = true)) {
             val response = tgBotService.sendMenu(chatId)
         }
 
-        if (data.equals("words_learning_cliched", ignoreCase = true)) {
+        if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
             val response = tgBotService.sendMessage(
-                chatId, "Учить английские слова",
+                chatId, MENU_LEARN_MESSAGE,
             )
         }
 
-        if (data.equals("statistics_clicked", ignoreCase = true)) {
+        if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
             val response = tgBotService.sendMessage(
-                chatId, "Выучено 10 из 10 слов | 100%"
+                chatId, MENU_STATISTICS_MESSAGE
             )
         }
     }

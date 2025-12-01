@@ -54,12 +54,12 @@ class TelegramBotService(val botToken: String) {
                     [
             			[
             				{
-            				"text":"Изучить слова",
-            				"callback_data":"words_learning_cliched"	
+            				"text":"$BUTTON_TEXT_LEARN_WORDS",
+            				"callback_data":"$MENU_LEARN_DATA_KEY"	
             				},
             				{
-            				"text":"Статистика",
-            				"callback_data":"statistics_clicked"	
+            				"text":"$BUTTON_TEXT_STATISTICS",
+            				"callback_data":"$MENU_STATISTICS_DATA_KEY"	
             				}
             			]
             	    ]
