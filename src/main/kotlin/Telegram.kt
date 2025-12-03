@@ -1,6 +1,5 @@
 package org.example
 
-const val MENU_STATISTICS_MESSAGE = "Выучено 10 из 10 слов | 100%"
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
 const val MENU_LEARN_MESSAGE = "Учить английские слова"
 const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
@@ -13,6 +12,13 @@ const val HELLO_COMMAND = "hello"
 const val HELLO_MESSAGE = "hello!"
 
 fun main(args: Array<String>) {
+
+    val trainer = try {
+        LearnWordsTrainer()
+    } catch (e: Exception) {
+        println("Невозможно загрузить словарь")
+        return
+    }
 
     val botToken = args[0]
     val tgBotService = TelegramBotService(botToken)
@@ -53,8 +59,18 @@ fun main(args: Array<String>) {
         }
 
         if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
+
+            val statistics = trainer.getStatistics()
+
+            val statisticsStr = "Выучено ${statistics.learned} из ${statistics.total} слов | ${
+                String.format(
+                    "%.2f",
+                    statistics.percent
+                )
+            }%\n"
+
             val response = tgBotService.sendMessage(
-                chatId, MENU_STATISTICS_MESSAGE
+                chatId, statisticsStr
             )
         }
     }
