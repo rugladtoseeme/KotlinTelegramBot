@@ -41,7 +41,7 @@ class TelegramBotService(val botToken: String) {
     }
 
     fun sendMenu(chatId: Long): String {
-        val urlGetUpdates =
+        val urlSendMessage =
             "$URL_TELEGRAM_API$botToken/sendMessage"
 
         val sendMenuBody = """
@@ -67,18 +67,76 @@ class TelegramBotService(val botToken: String) {
             }
         """.trimIndent()
 
-        val requestGetUpdates: HttpRequest =
-            HttpRequest.newBuilder().uri(URI.create(urlGetUpdates)).header("Content-type", "application/json").POST(
+        val requestSendMenu: HttpRequest =
+            HttpRequest.newBuilder().uri(URI.create(urlSendMessage)).header("Content-type", "application/json").POST(
                 HttpRequest.BodyPublishers.ofString(sendMenuBody)
             ).build()
 
         try {
-            val responseGetUpdates: HttpResponse<String> =
-                client.send(requestGetUpdates, HttpResponse.BodyHandlers.ofString())
+            val responseSendMenu: HttpResponse<String> =
+                client.send(requestSendMenu, HttpResponse.BodyHandlers.ofString())
 
-            return responseGetUpdates.body()
+            return responseSendMenu.body()
         } catch (e: Exception) {
             throw e
+        }
+    }
+
+    fun sendQuestion(chatId: Long, question: Question?): String {
+        val urlSendMessage =
+            "$URL_TELEGRAM_API$botToken/sendMessage"
+
+        if (question == null) {
+            return sendMessage(chatId, "Вы выучили все слова в базе!")
+        } else {
+            val sendQuestionBody = """
+            {
+                "chat_id": $chatId,
+                "text": "${question.correctAnswer.original}",
+                "reply_markup":
+                {
+                    "inline_keyboard":
+                    [
+            			[
+            				{
+            				"text":"${question.variants[0].translation}",
+            				"callback_data":"${CALLBACK_DATA_ANSWER_PREFIX}0"	
+            				},
+            				{
+            				"text":"${question.variants[1].translation}",
+            				"callback_data":"${CALLBACK_DATA_ANSWER_PREFIX}1"	
+            				},
+                            {
+            				"text":"${question.variants[2].translation}",
+            				"callback_data":"${CALLBACK_DATA_ANSWER_PREFIX}2"	
+            				},
+                            {
+            				"text":"${question.variants[3].translation}",
+            				"callback_data":"${CALLBACK_DATA_ANSWER_PREFIX}3"	
+            				},
+                            {
+                            "text":"В меню.",
+            				"callback_data":"${CALLBACK_DATA_ANSWER_PREFIX}menu"	
+            				}
+            			]
+            	    ]
+                }
+            }
+        """.trimIndent()
+
+            val requestSendMessage: HttpRequest =
+                HttpRequest.newBuilder().uri(URI.create(urlSendMessage)).header("Content-type", "application/json")
+                    .POST(
+                        HttpRequest.BodyPublishers.ofString(sendQuestionBody)
+                    ).build()
+
+            try {
+                val responseSendMessage: HttpResponse<String> =
+                    client.send(requestSendMessage, HttpResponse.BodyHandlers.ofString())
+                return responseSendMessage.body()
+            } catch (e: Exception) {
+                throw e
+            }
         }
     }
 }

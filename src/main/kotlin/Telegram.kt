@@ -1,7 +1,6 @@
 package org.example
 
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
-const val MENU_LEARN_MESSAGE = "Учить английские слова"
 const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
 
 const val BUTTON_TEXT_STATISTICS = "Статистика"
@@ -10,6 +9,8 @@ const val BUTTON_TEXT_LEARN_WORDS = "Изучить слова"
 const val MENU_COMMAND = "menu"
 const val HELLO_COMMAND = "hello"
 const val HELLO_MESSAGE = "hello!"
+
+const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
 fun main(args: Array<String>) {
 
@@ -53,8 +54,10 @@ fun main(args: Array<String>) {
         }
 
         if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
-            val response = tgBotService.sendMessage(
-                chatId, MENU_LEARN_MESSAGE,
+            val question = trainer.getNextQuestion()
+
+            val response = tgBotService.sendQuestion(
+                chatId, question,
             )
         }
 
