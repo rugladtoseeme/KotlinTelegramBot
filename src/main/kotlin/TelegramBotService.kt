@@ -97,7 +97,10 @@ class TelegramBotService(val botToken: String) {
             				${
             question.variants.mapIndexed { index, value -> "[{\"text\":\"${value.translation}\", \"callback_data\":\"${CALLBACK_DATA_ANSWER_PREFIX}$index\" }]" }
                 .joinToString(", ")
-        }
+                            },
+                            [{"text":"<-- меню",
+            				"callback_data":"menu"
+                            }]
             	    ]
                 }
             }
