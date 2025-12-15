@@ -1,5 +1,9 @@
 package org.example
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
 const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
 
@@ -9,6 +13,25 @@ const val BUTTON_TEXT_LEARN_WORDS = "Изучить слова"
 const val MENU_COMMAND = "menu"
 
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
+
+@Serializable
+data class Response(val result: List<Update>)
+
+@Serializable
+data class Update(
+    @SerialName("update_id") val updateId: Long,
+    val message: Message? = null,
+    @SerialName("callback_query") val callbackQuery: CallbackQuery? = null
+)
+
+@Serializable
+data class Message(val chat: Chat, val text: String)
+
+@Serializable
+data class CallbackQuery(val message: Message?, val data: String)
+
+@Serializable
+data class Chat(@SerialName("id") val chatId: Long)
 
 fun main(args: Array<String>) {
 
@@ -23,66 +46,67 @@ fun main(args: Array<String>) {
     val tgBotService = TelegramBotService(botToken)
     var updateId = 0L
 
-    val updateIdRegex = "\"update_id\":\\s*(\\d+)".toRegex()
-    val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
-    val chatIdRegex = "\"chat\"\\s*:\\s*\\{\\s?\"id\"\\s*:\\s*(-*\\d+)".toRegex()
-    val dataRegex = "\"data\":\"(.+?)\"".toRegex()
-
     var question: Question? = null
 
+    val json = Json { ignoreUnknownKeys = true }
+
     while (true) {
-        val updates = tgBotService.getUpdates(updateId)
-        println(updates)
+        val responseJson = tgBotService.getUpdates(updateId)
+        println(responseJson)
 
-        updateId = (updateIdRegex.find(updates)?.groups?.get(1)?.value?.toLong() ?: 0) + 1
+        val response: Response = json.decodeFromString(responseJson)
 
-        val chatId: Long = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLongOrNull() ?: continue
+        val updates = response.result
 
-        val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
-
-        val data = dataRegex.find(updates)?.groups?.get(1)?.value
+        val firstUpdate = updates.firstOrNull() ?: continue
+        updateId = firstUpdate.updateId + 1
+        val text = firstUpdate.message?.text
+        val chatId = firstUpdate.message?.chat?.chatId ?: firstUpdate.callbackQuery?.message?.chat?.chatId
+        val data = firstUpdate.callbackQuery?.data
 
         println(text)
         Thread.sleep(2000)
 
-        if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
-            val response = tgBotService.sendMenu(chatId)
-        }
+        if (chatId != null) {
+            if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
+                val response = tgBotService.sendMenu(chatId)
+            }
 
-        if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
+            if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
 
-            val statistics = trainer.getStatistics()
+                val statistics = trainer.getStatistics()
 
-            val statisticsStr = "Выучено ${statistics.learned} из ${statistics.total} слов | ${
-                String.format(
-                    "%.2f",
-                    statistics.percent
-                )
-            }%\n"
-
-            val response = tgBotService.sendMessage(
-                chatId, statisticsStr
-            )
-        }
-
-        if (question != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
-            val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
-            val response =
-                if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
-                    tgBotService.sendMessage(
-                        chatId, "Правильно!"
+                val statisticsStr = "Выучено ${statistics.learned} из ${statistics.total} слов | ${
+                    String.format(
+                        "%.2f",
+                        statistics.percent
                     )
-                } else tgBotService.sendMessage(
-                    chatId,
-                    "Неправильно! ${question.correctAnswer.original} – это ${question.correctAnswer.translation}"
+                }%\n"
+
+                val response = tgBotService.sendMessage(
+                    chatId, statisticsStr
                 )
+            }
 
-            question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
-        }
+            if (question != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+                val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
+                val response =
+                    if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
+                        tgBotService.sendMessage(
+                            chatId, "Правильно!"
+                        )
+                    } else tgBotService.sendMessage(
+                        chatId,
+                        "Неправильно! ${question.correctAnswer.original} – это ${question.correctAnswer.translation}"
+                    )
 
-        if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
+                question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+            }
 
-            question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+            if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
+
+                question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+            }
         }
     }
 }
