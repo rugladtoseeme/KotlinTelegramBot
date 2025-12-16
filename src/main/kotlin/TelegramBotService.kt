@@ -1,5 +1,6 @@
 package org.example
 
+import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -29,7 +30,7 @@ class TelegramBotService(val botToken: String) {
         }
     }
 
-    fun getUpdates(updateId: Long): String {
+    fun getUpdates(updateId: Long): Response{
 
         val urlGetUpdates = "$URL_TELEGRAM_API$botToken/getUpdates?offset=$updateId"
 
@@ -37,7 +38,8 @@ class TelegramBotService(val botToken: String) {
         val responseGetUpdates: HttpResponse<String> =
             client.send(requestGetUpdates, HttpResponse.BodyHandlers.ofString())
 
-        return responseGetUpdates.body()
+        val json = Json { ignoreUnknownKeys = true }
+        return json .decodeFromString(responseGetUpdates.body())
     }
 
     fun sendMenu(chatId: Long): String {

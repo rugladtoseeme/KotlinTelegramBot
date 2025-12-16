@@ -46,68 +46,60 @@ fun main(args: Array<String>) {
     val tgBotService = TelegramBotService(botToken)
     var updateId = 0L
 
-    var question: Question? = null
-
     val json = Json { ignoreUnknownKeys = true }
 
     while (true) {
-        val responseJson = tgBotService.getUpdates(updateId)
-        println(responseJson)
-
-        val response: Response = json.decodeFromString(responseJson)
-
+        val response: Response = tgBotService.getUpdates(updateId)
         val updates = response.result
-
         val firstUpdate = updates.firstOrNull() ?: continue
         updateId = firstUpdate.updateId + 1
         val text = firstUpdate.message?.text
-        val chatId = firstUpdate.message?.chat?.chatId ?: firstUpdate.callbackQuery?.message?.chat?.chatId
+        val chatId = firstUpdate.message?.chat?.chatId ?: firstUpdate.callbackQuery?.message?.chat?.chatId ?: continue
         val data = firstUpdate.callbackQuery?.data
 
         println(text)
         Thread.sleep(2000)
 
-        if (chatId != null) {
-            if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
-                val response = tgBotService.sendMenu(chatId)
-            }
-
-            if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
-
-                val statistics = trainer.getStatistics()
-
-                val statisticsStr = "Выучено ${statistics.learned} из ${statistics.total} слов | ${
-                    String.format(
-                        "%.2f",
-                        statistics.percent
-                    )
-                }%\n"
-
-                val response = tgBotService.sendMessage(
-                    chatId, statisticsStr
-                )
-            }
-
-            if (question != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
-                val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
-                val response =
-                    if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
-                        tgBotService.sendMessage(
-                            chatId, "Правильно!"
-                        )
-                    } else tgBotService.sendMessage(
-                        chatId,
-                        "Неправильно! ${question.correctAnswer.original} – это ${question.correctAnswer.translation}"
-                    )
-
-                question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
-            }
-
-            if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
-
-                question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
-            }
+        if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
+            val response = tgBotService.sendMenu(chatId)
         }
+
+        if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
+
+            val statistics = trainer.getStatistics()
+
+            val statisticsStr = "Выучено ${statistics.learned} из ${statistics.total} слов | ${
+                String.format(
+                    "%.2f",
+                    statistics.percent
+                )
+            }%\n"
+
+            val response = tgBotService.sendMessage(
+                chatId, statisticsStr
+            )
+        }
+
+        if (trainer.currentQuestion != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+            val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
+            val response =
+                if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
+                    tgBotService.sendMessage(
+                        chatId, "Правильно!"
+                    )
+                } else tgBotService.sendMessage(
+                    chatId,
+                    "Неправильно! ${trainer.currentQuestion!!.correctAnswer.original} – это ${trainer.currentQuestion!!.correctAnswer.translation}"
+                )
+
+            trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+        }
+
+        if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
+
+            trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+        }
+
     }
 }
 

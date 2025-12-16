@@ -23,7 +23,7 @@ data class Question(val correctAnswer: Word, val variants: List<Word>) {
 
 class LearnWordsTrainer {
 
-    private var currentQuestion: Question? = null
+    var currentQuestion: Question? = null
     private var dictionary = loadDictionary()
 
     fun getNextQuestion(): Question? {
