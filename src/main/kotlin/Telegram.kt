@@ -42,11 +42,11 @@ fun main(args: Array<String>) {
         return
     }
 
-    val botToken = args[0]
-    val tgBotService = TelegramBotService(botToken)
-    var updateId = 0L
-
     val json = Json { ignoreUnknownKeys = true }
+
+    val botToken = args[0]
+    val tgBotService = TelegramBotService(botToken, json)
+    var updateId = 0L
 
     while (true) {
         val response: Response = tgBotService.getUpdates(updateId)
@@ -61,7 +61,7 @@ fun main(args: Array<String>) {
         Thread.sleep(2000)
 
         if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
-            val response = tgBotService.sendMenu(chatId)
+            tgBotService.sendMenu(chatId)
         }
 
         if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
@@ -74,32 +74,28 @@ fun main(args: Array<String>) {
                     statistics.percent
                 )
             }%\n"
-
-            val response = tgBotService.sendMessage(
+            tgBotService.sendMessage(
                 chatId, statisticsStr
             )
         }
 
         if (trainer.currentQuestion != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
             val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
-            val response =
-                if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
-                    tgBotService.sendMessage(
-                        chatId, "Правильно!"
-                    )
-                } else tgBotService.sendMessage(
-                    chatId,
-                    "Неправильно! ${trainer.currentQuestion!!.correctAnswer.original} – это ${trainer.currentQuestion!!.correctAnswer.translation}"
+            if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
+                tgBotService.sendMessage(
+                    chatId, "Правильно!"
                 )
+            } else tgBotService.sendMessage(
+                chatId,
+                "Неправильно! ${trainer.currentQuestion?.correctAnswer?.original} – это ${trainer.currentQuestion?.correctAnswer?.translation}"
+            )
 
             trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
         }
 
         if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
-
             trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
         }
-
     }
 }
 
@@ -109,7 +105,7 @@ fun checkNextQuestionAndSend(
     trainer: LearnWordsTrainer
 ): Question? {
     val question = trainer.getNextQuestion()
-    val response = if (question == null) {
+    if (question == null) {
         tgBotService.sendMessage(chatId, "Вы выучили все слова в базе!")
     } else {
         tgBotService.sendQuestion(
