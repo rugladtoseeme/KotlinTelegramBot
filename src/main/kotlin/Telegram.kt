@@ -1,5 +1,9 @@
 package org.example
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
 const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
 
@@ -10,6 +14,25 @@ const val MENU_COMMAND = "menu"
 
 const val CALLBACK_DATA_ANSWER_PREFIX = "answer_"
 
+@Serializable
+data class Response(val result: List<Update>)
+
+@Serializable
+data class Update(
+    @SerialName("update_id") val updateId: Long,
+    val message: Message? = null,
+    @SerialName("callback_query") val callbackQuery: CallbackQuery? = null
+)
+
+@Serializable
+data class Message(val chat: Chat, val text: String)
+
+@Serializable
+data class CallbackQuery(val message: Message?, val data: String)
+
+@Serializable
+data class Chat(@SerialName("id") val chatId: Long)
+
 fun main(args: Array<String>) {
 
     val trainer = try {
@@ -19,34 +42,26 @@ fun main(args: Array<String>) {
         return
     }
 
+    val json = Json { ignoreUnknownKeys = true }
+
     val botToken = args[0]
-    val tgBotService = TelegramBotService(botToken)
+    val tgBotService = TelegramBotService(botToken, json)
     var updateId = 0L
 
-    val updateIdRegex = "\"update_id\":\\s*(\\d+)".toRegex()
-    val messageTextRegex: Regex = "\"text\":\"(.+?)\"".toRegex()
-    val chatIdRegex = "\"chat\"\\s*:\\s*\\{\\s?\"id\"\\s*:\\s*(\\d+)".toRegex()
-    val dataRegex = "\"data\":\"(.+?)\"".toRegex()
-
-    var question: Question? = null
-
     while (true) {
-        val updates = tgBotService.getUpdates(updateId)
-        println(updates)
-
-        updateId = (updateIdRegex.find(updates)?.groups?.get(1)?.value?.toLong() ?: 0) + 1
-
-        val chatId: Long = chatIdRegex.find(updates)?.groups?.get(1)?.value?.toLongOrNull() ?: continue
-
-        val text = messageTextRegex.find(updates)?.groups?.get(1)?.value
-
-        val data = dataRegex.find(updates)?.groups?.get(1)?.value
+        val response: Response = tgBotService.getUpdates(updateId)
+        val updates = response.result
+        val firstUpdate = updates.firstOrNull() ?: continue
+        updateId = firstUpdate.updateId + 1
+        val text = firstUpdate.message?.text
+        val chatId = firstUpdate.message?.chat?.chatId ?: firstUpdate.callbackQuery?.message?.chat?.chatId ?: continue
+        val data = firstUpdate.callbackQuery?.data
 
         println(text)
         Thread.sleep(2000)
 
         if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
-            val response = tgBotService.sendMenu(chatId)
+            tgBotService.sendMenu(chatId)
         }
 
         if (data.equals(MENU_STATISTICS_DATA_KEY, ignoreCase = true)) {
@@ -59,30 +74,27 @@ fun main(args: Array<String>) {
                     statistics.percent
                 )
             }%\n"
-
-            val response = tgBotService.sendMessage(
+            tgBotService.sendMessage(
                 chatId, statisticsStr
             )
         }
 
-        if (question != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
+        if (trainer.currentQuestion != null && data?.startsWith(CALLBACK_DATA_ANSWER_PREFIX) == true) {
             val answerIndex = data.removePrefix(CALLBACK_DATA_ANSWER_PREFIX).toIntOrNull()
-            val response =
-                if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
-                    tgBotService.sendMessage(
-                        chatId, "Правильно!"
-                    )
-                } else tgBotService.sendMessage(
-                    chatId,
-                    "Неправильно! ${question.correctAnswer.original} – это ${question.correctAnswer.translation}"
+            if (answerIndex != null && trainer.checkAnswer(answerIndex)) {
+                tgBotService.sendMessage(
+                    chatId, "Правильно!"
                 )
+            } else tgBotService.sendMessage(
+                chatId,
+                "Неправильно! ${trainer.currentQuestion?.correctAnswer?.original} – это ${trainer.currentQuestion?.correctAnswer?.translation}"
+            )
 
-            question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+            trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
         }
 
         if (data.equals(MENU_LEARN_DATA_KEY, ignoreCase = true)) {
-
-            question = checkNextQuestionAndSend(chatId, tgBotService, trainer)
+            trainer.currentQuestion = checkNextQuestionAndSend(chatId, tgBotService, trainer)
         }
     }
 }
@@ -93,7 +105,7 @@ fun checkNextQuestionAndSend(
     trainer: LearnWordsTrainer
 ): Question? {
     val question = trainer.getNextQuestion()
-    val response = if (question == null) {
+    if (question == null) {
         tgBotService.sendMessage(chatId, "Вы выучили все слова в базе!")
     } else {
         tgBotService.sendQuestion(
