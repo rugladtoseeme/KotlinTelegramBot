@@ -1,6 +1,5 @@
 package org.example
 
-const val WORDS_FILE_NAME = "words.txt"
 const val URL_TELEGRAM_API = "https://api.telegram.org/bot"
 const val RIGHT_ANSWERS_THRESHOLD = 3
 const val QUESTION_WORDS_SIZE = 4
