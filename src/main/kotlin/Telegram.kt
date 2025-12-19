@@ -6,6 +6,8 @@ import kotlinx.serialization.json.Json
 
 const val DEFAULT_WORDS_FILE_NAME = "words.txt"
 
+const val UPDATES_TIMEOUT = 2000L
+
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
 const val MENU_LEARN_DATA_KEY = "words_learning_clicked"
 const val MENU_RESET_DATA_KEY = "reset_dictionary_clicked"
@@ -51,7 +53,7 @@ fun main(args: Array<String>) {
         val sortedUpdates = response.result.sortedBy { it.updateId }
         sortedUpdates.forEach { handleUpdate(it, tgBotService, chatsTrainersMap) }
         lastUpdateId = sortedUpdates.lastOrNull()?.let { it.updateId + 1 } ?: continue
-        Thread.sleep(2000)
+        Thread.sleep(UPDATES_TIMEOUT)
     }
 }
 
