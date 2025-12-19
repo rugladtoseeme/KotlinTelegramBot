@@ -73,6 +73,9 @@ class TelegramBotService(val botToken: String, val json: Json) {
                     listOf(
                         InlineKeyboard(BUTTON_TEXT_LEARN_WORDS, MENU_LEARN_DATA_KEY),
                         InlineKeyboard(BUTTON_TEXT_STATISTICS, MENU_STATISTICS_DATA_KEY)
+                    ),
+                    listOf(
+                        InlineKeyboard(BUTTON_TEXT_RESET_DICTIONARY, MENU_RESET_DATA_KEY)
                     )
                 )
             )
