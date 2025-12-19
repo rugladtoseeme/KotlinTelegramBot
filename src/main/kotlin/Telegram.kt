@@ -7,8 +7,8 @@ import kotlinx.serialization.json.Json
 const val DEFAULT_WORDS_FILE_NAME = "words.txt"
 
 const val MENU_STATISTICS_DATA_KEY = "statistics_clicked"
-const val MENU_LEARN_DATA_KEY = "words_learning_cliched"
-const val MENU_RESET_DATA_KEY = "reset_dictionary_cliched"
+const val MENU_LEARN_DATA_KEY = "words_learning_clicked"
+const val MENU_RESET_DATA_KEY = "reset_dictionary_clicked"
 
 const val BUTTON_TEXT_STATISTICS = "Статистика"
 const val BUTTON_TEXT_LEARN_WORDS = "Изучить слова"
@@ -51,6 +51,7 @@ fun main(args: Array<String>) {
         val sortedUpdates = response.result.sortedBy { it.updateId }
         sortedUpdates.forEach { handleUpdate(it, tgBotService, chatsTrainersMap) }
         lastUpdateId = sortedUpdates.lastOrNull()?.let { it.updateId + 1 } ?: continue
+        Thread.sleep(2000)
     }
 }
 
@@ -64,7 +65,6 @@ fun handleUpdate(update: Update, tgBotService: TelegramBotService, trainers: Has
     }
 
     println(text)
-    Thread.sleep(2000)
 
     if (text.equals(MENU_COMMAND, ignoreCase = true) || data.equals(MENU_COMMAND, ignoreCase = true)) {
         tgBotService.sendMenu(chatId)
